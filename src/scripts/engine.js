@@ -65,16 +65,22 @@ async function setCardsField(cardId) {
     let cardImageRect = computerCardImage.getBoundingClientRect();
     let scaleX = 140 / cardImageRect.width;
     let scaleY = 196 / cardImageRect.height;
-    computerCardImage.style.transform = `translate(${
-        ComputerFieldCardRect.left + 36 - cardImageRect.left
-    }px, ${
-        ComputerFieldCardRect.top + 50 - cardImageRect.top
-    }px) scale(${scaleX}, ${scaleY})`;
+    computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
+        }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
+        }px) scale(${scaleX}, ${scaleY})`;
     computerCardImage.style.transition = 'transform 0.5s';
 
     setTimeout(() => {
-// Aqui deve vir o código para virar a carta.
+
         state.fieldCards.computer.style.display = "block";
+    }, 500);
+
+    setTimeout(() => {
+        document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
+    }, 500);
+    setTimeout(() => {
+        // Aqui deve vir o código para virar a carta.
+        document.querySelector('.flip-box .flip-box-inner').style.transform = 'rotateY(180deg)';
     }, 500);
 
     setTimeout(async () => {
@@ -84,6 +90,10 @@ async function setCardsField(cardId) {
         state.fieldCards.player.src = cardData[cardId].img;
         state.fieldCards.computer.src = cardData[computerCardId].img;
 
+
+    }, 500);
+
+    setTimeout(async () => {
         let duelResults = await checkDuelResults(cardId, computerCardId);
 
         await updateScore();
@@ -99,14 +109,14 @@ async function checkDuelResults(playerCardId, computerCardId) {
     if (playerCard.WinOf.includes(computerCardId)) {
         duelResults = "Ganhou";
         await playAudio("win");
-        state.score.playerScore ++;
+        state.score.playerScore++;
     }
 
     // check if loses
     if (playerCard.LoseOf.includes(computerCardId)) {
         duelResults = "Perdeu";
         await playAudio("lose");
-        state.score.computerScore ++;
+        state.score.computerScore++;
     }
 
     return duelResults;
@@ -136,16 +146,15 @@ async function createCardImage(randomIdCard, fieldSide) {
             let cardImageRect = cardDiv.getBoundingClientRect();
             let scaleX = 140 / (cardImageRect.width / 1.2);
             let scaleY = 196 / (cardImageRect.height / 1.2);
-            cardDiv.style.transform = `translate(${
-                playerFieldCardRect.left + 29 - cardImageRect.left
-            }px, ${
-                playerFieldCardRect.top + 39 - cardImageRect.top
-            }px) scale(${scaleX}, ${scaleY})`;
+            cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
+                }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
+                }px) scale(${scaleX}, ${scaleY})`;
             cardDiv.style.transition = 'transform 0.7s';
 
             // Aguarde 1 segundo para a animação terminar, então execute setCardsField
             setTimeout(() => {
                 setCardsField(cardImage.getAttribute("data-id"));
+
             }, 700);
         });
 
@@ -191,7 +200,9 @@ async function resetDuel() {
 
     state.fieldCards.player.style.display = "none";
     state.fieldCards.computer.style.display = "none";
+    document.querySelector('.flip-box .flip-box-inner').style.transform = '';
 
+    document.getElementById('flip-box-front-img').src = "";
     drawCards(5, player.player1);
     drawCards(5, player.computer);
 }
@@ -202,11 +213,9 @@ async function playAudio(status) {
 }
 
 async function updateScore() {
-    state.score.scoreBox.innerText = `Win: ${
-        state.score.playerScore
-    } | Lose: ${
-        state.score.computerScore
-    }`;
+    state.score.scoreBox.innerText = `Win: ${state.score.playerScore
+        } | Lose: ${state.score.computerScore
+        }`;
 }
 
 function init() {

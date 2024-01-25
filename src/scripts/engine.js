@@ -1,229 +1,235 @@
-const state = {
-    score: {
-        playerScore: 0,
-        computerScore: 0,
-        scoreBox: document.getElementById("score_points")
-    },
-    cardSprite: {
-        avatar: document.getElementById("card-image"),
-        name: document.getElementById("card-name"),
-        type: document.getElementById("card-type")
-    },
-    fieldCards: {
-        player: document.getElementById("player-field-card"),
-        computer: document.getElementById("computer-field-card")
-    },
-    button: document.getElementById("next-duel")
-};
+document.addEventListener('DOMContentLoaded', (event) => {
+    const state = {
+        score: {
+            playerScore: 0,
+            computerScore: 0,
+            scoreBox: document.getElementById("score_points")
+        },
+        cardSprite: {
+            avatar: document.getElementById("card-image"),
+            name: document.getElementById("card-name"),
+            type: document.getElementById("card-type")
+        },
+        fieldCards: {
+            player: document.getElementById("player-field-card"),
+            computer: document.getElementById("computer-field-card")
+        },
+        button: document.getElementById("next-duel")
+    };
 
-const player = {
-    player1: "player-cards",
-    computer: "computer-cards"
-};
+    const player = {
+        player1: "player-cards",
+        computer: "computer-cards"
+    };
 
-const cardData = [
-    {
-        id: 0,
-        name: "Blue Eyes White Dragon",
-        type: "Paper",
-        img: "./src/assets/icons/dragon.png",
-        WinOf: [1],
-        LoseOf: [2]
-    }, {
-        id: 1,
-        name: "Dark Magician",
-        type: "Rock",
-        img: "./src/assets/icons/magician.png",
-        WinOf: [2],
-        LoseOf: [0]
-    }, {
-        id: 2,
-        name: "Exodia",
-        type: "Scissors",
-        img: "./src/assets/icons/exodia.png",
-        WinOf: [0],
-        LoseOf: [1]
-    },
-];
+    const cardData = [
+        {
+            id: 0,
+            name: "Blue Eyes White Dragon",
+            type: "Paper",
+            img: "./src/assets/icons/dragon.png",
+            WinOf: [1],
+            LoseOf: [2]
+        }, {
+            id: 1,
+            name: "Dark Magician",
+            type: "Rock",
+            img: "./src/assets/icons/magician.png",
+            WinOf: [2],
+            LoseOf: [0]
+        }, {
+            id: 2,
+            name: "Exodia",
+            type: "Scissors",
+            img: "./src/assets/icons/exodia.png",
+            WinOf: [0],
+            LoseOf: [1]
+        },
+    ];
 
-
-async function getRandomCardId() {
-    const randomIndex = Math.floor(Math.random() * cardData.length);
-    return cardData[randomIndex].id;
-}
-
-async function setCardsField(cardId) {
-
-
-    let computerCardId = await getRandomCardId();
+    let isCardSelected = false;
+    function getRandomCardId() {
+        const randomIndex = Math.floor(Math.random() * cardData.length);
+        return cardData[randomIndex].id;
+    }
+    function setCardsField(cardId) {
 
 
-    let ComputerFieldCardRect = document.getElementsByClassName('card-infield')[1].getBoundingClientRect();
-    let computerCardImage = document.querySelector(`#computer-cards img[data-id='${computerCardId}']`);
-
-    // Obtenha a posição do elemento de origem
-    let cardImageRect = computerCardImage.getBoundingClientRect();
-    let scaleX = 140 / cardImageRect.width;
-    let scaleY = 196 / cardImageRect.height;
-    computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
-        }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
-        }px) scale(${scaleX}, ${scaleY})`;
-    computerCardImage.style.transition = 'transform 0.5s';
-
-    setTimeout(() => {
-
-        state.fieldCards.computer.style.display = "block";
-    }, 500);
-
-    setTimeout(() => {
-        document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
-    }, 500);
-    setTimeout(() => {
-        // Aqui deve vir o código para virar a carta.
-        document.querySelector('.flip-box .flip-box-inner').style.transform = 'rotateY(180deg)';
-    }, 500);
-
-    setTimeout(async () => {
-        await RemoveAllCardImages();
-        state.fieldCards.player.style.display = "block";
-
-        state.fieldCards.player.src = cardData[cardId].img;
-        state.fieldCards.computer.src = cardData[computerCardId].img;
+        let computerCardId = getRandomCardId();
 
 
-    }, 500);
+        let ComputerFieldCardRect = document.getElementsByClassName('card-infield')[1].getBoundingClientRect();
+        let computerCardImage = document.querySelector(`#computer-cards img[data-id='${computerCardId}']`);
 
-    setTimeout(async () => {
-        let duelResults = await checkDuelResults(cardId, computerCardId);
+        // Obtenha a posição do elemento de origem
+        let cardImageRect = computerCardImage.getBoundingClientRect();
+        let scaleX = 140 / cardImageRect.width;
+        let scaleY = 196 / cardImageRect.height;
+        computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
+            }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
+            }px) scale(${scaleX}, ${scaleY})`;
+        computerCardImage.style.transition = 'transform 0.5s';
 
-        await updateScore();
-        await drawButton(duelResults);
-    }, 1000);
-}
+        setTimeout(() => {
 
-async function checkDuelResults(playerCardId, computerCardId) {
-    let playerCard = cardData[playerCardId];
-    let duelResults = "Empate";
+            state.fieldCards.computer.style.display = "block";
+        }, 500);
 
-    // check if win
-    if (playerCard.WinOf.includes(computerCardId)) {
-        duelResults = "Ganhou";
-        await playAudio("win");
-        state.score.playerScore++;
+        setTimeout(() => {
+            document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
+        }, 500);
+        setTimeout(() => { // Aqui deve vir o código para virar a carta.
+            document.querySelector('.flip-box .flip-box-inner').style.transform = 'rotateY(180deg)';
+        }, 500);
+
+        setTimeout(async () => {
+            await RemoveAllCardImages();
+            state.fieldCards.player.style.display = "block";
+
+            state.fieldCards.player.src = cardData[cardId].img;
+            state.fieldCards.computer.src = cardData[computerCardId].img;
+
+
+        }, 500);
+
+        setTimeout(async () => {
+            let duelResults = await checkDuelResults(cardId, computerCardId);
+
+            await updateScore();
+            await drawButton(duelResults);
+        }, 1000);
     }
 
-    // check if loses
-    if (playerCard.LoseOf.includes(computerCardId)) {
-        duelResults = "Perdeu";
-        await playAudio("lose");
-        state.score.computerScore++;
+    async function checkDuelResults(playerCardId, computerCardId) {
+        let playerCard = cardData[playerCardId];
+        let duelResults = "Empate";
+
+        // check if win
+        if (playerCard.WinOf.includes(computerCardId)) {
+            duelResults = "Ganhou";
+            await playAudio("win");
+            state.score.playerScore++;
+        }
+
+        // check if loses
+        if (playerCard.LoseOf.includes(computerCardId)) {
+            duelResults = "Perdeu";
+            await playAudio("lose");
+            state.score.computerScore++;
+        }
+
+        return duelResults;
     }
 
-    return duelResults;
-}
+    function createCardImage(randomIdCard, fieldSide) {
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("card");
 
-async function createCardImage(randomIdCard, fieldSide) {
-    const cardDiv = document.createElement("div");
-    cardDiv.classList.add("card");
+        const cardImage = document.createElement("img");
+        cardImage.setAttribute("height", "100px");
+        cardImage.setAttribute("src", "./src/assets/icons/card-back.png");
+        cardImage.setAttribute("data-id", randomIdCard);
 
-    const cardImage = document.createElement("img");
-    cardImage.setAttribute("height", "100px");
-    cardImage.setAttribute("src", "./src/assets/icons/card-back.png");
-    cardImage.setAttribute("data-id", randomIdCard);
+        cardDiv.appendChild(cardImage);
 
-    cardDiv.appendChild(cardImage);
+        if (fieldSide === player.player1) {
 
-    if (fieldSide === player.player1) {
+            cardDiv.addEventListener("mouseover", () => {
+                drawSelectCard(randomIdCard);
+            });
 
-        cardDiv.addEventListener("mouseover", () => {
-            drawSelectCard(randomIdCard);
-        });
+            cardDiv.addEventListener("click", async () => {
+                if (!isCardSelected) {
+                    isCardSelected = true;
+                let playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
 
-        cardDiv.addEventListener("click", async () => {
-            let playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
+                // Mova o cardImage do player1 para o fieldCards.player
+                let cardImageRect = cardDiv.getBoundingClientRect();
+                let scaleX = 140 / (cardImageRect.width / 1.2);
+                let scaleY = 196 / (cardImageRect.height / 1.2);
+                cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
+                    }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
+                    }px) scale(${scaleX}, ${scaleY})`;
+                cardDiv.style.transition = 'transform 0.7s';
 
-            // Mova o cardImage do player1 para o fieldCards.player
-            let cardImageRect = cardDiv.getBoundingClientRect();
-            let scaleX = 140 / (cardImageRect.width / 1.2);
-            let scaleY = 196 / (cardImageRect.height / 1.2);
-            cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
-                }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
-                }px) scale(${scaleX}, ${scaleY})`;
-            cardDiv.style.transition = 'transform 0.7s';
+                // Aguarde 1 segundo para a animação terminar, então execute setCardsField
+                setTimeout(() => {
+                    setCardsField(cardImage.getAttribute("data-id"));
 
-            // Aguarde 1 segundo para a animação terminar, então execute setCardsField
-            setTimeout(() => {
-                setCardsField(cardImage.getAttribute("data-id"));
+                }, 700);
+            }});
 
-            }, 700);
-        });
+            cardImage.setAttribute("src", cardData[randomIdCard].img);
+        }
 
-        cardImage.setAttribute("src", cardData[randomIdCard].img);
+        return cardDiv;
     }
 
-    return cardDiv;
-}
+    function RemoveAllCardImages() {
+        let cards = document.querySelector(".card-box.framed#computer-cards");
+        let imgElements = cards.querySelectorAll("div");
+        imgElements.forEach((img) => img.remove());
 
-async function RemoveAllCardImages() {
-    let cards = document.querySelector(".card-box.framed#computer-cards");
-    let imgElements = cards.querySelectorAll("div");
-    imgElements.forEach((img) => img.remove());
-
-    cards = document.querySelector(".card-box.framed#player-cards");
-    imgElements = cards.querySelectorAll("div");
-    imgElements.forEach((img) => img.remove());
-}
-
-async function drawCards(cardNumbers, fieldSide) {
-    for (let i = 0; i < cardNumbers; i++) {
-        const randomIdCard = await getRandomCardId();
-        const cardImage = await createCardImage(randomIdCard, fieldSide);
-
-        document.getElementById(fieldSide).appendChild(cardImage);
+        cards = document.querySelector(".card-box.framed#player-cards");
+        imgElements = cards.querySelectorAll("div");
+        imgElements.forEach((img) => img.remove());
     }
-}
 
-function drawSelectCard(index) {
-    state.cardSprite.avatar.src = cardData[index].img;
-    state.cardSprite.name.innerText = cardData[index].name;
-    state.cardSprite.type.innerText = "Attribute: " + cardData[index].type;
-}
+    function drawCards(cardNumbers, fieldSide) {
+        for (let i = 0; i < cardNumbers; i++) {
+            const randomIdCard = getRandomCardId();
+            const cardImage = createCardImage(randomIdCard, fieldSide);
 
-async function drawButton(text) {
-    state.button.innerText = text;
-    state.button.style.display = "block";
-}
+            document.getElementById(fieldSide).appendChild(cardImage);
+        }
+    }
 
-async function resetDuel() {
-    state.cardSprite.avatar.src = "";
-    state.button.style.display = "none";
+    function drawSelectCard(index) {
+        state.cardSprite.avatar.src = cardData[index].img;
+        state.cardSprite.name.innerText = cardData[index].name;
+        state.cardSprite.type.innerText = "Attribute: " + cardData[index].type;
+    }
 
-    state.fieldCards.player.style.display = "none";
-    state.fieldCards.computer.style.display = "none";
-    document.querySelector('.flip-box .flip-box-inner').style.transform = '';
+    function drawButton(text) {
+        state.button.innerText = text;
+        state.button.style.display = "block";
+    }
 
-    document.getElementById('flip-box-front-img').src = "";
-    drawCards(5, player.player1);
-    drawCards(5, player.computer);
-}
+    function resetDuel() {
+        isCardSelected = false;
+        state.cardSprite.avatar.src = "";
+        state.button.style.display = "none";
 
-async function playAudio(status) {
-    const audio = new Audio(`./src/assets/audios/${status}.wav`);
-    audio.play();
-}
+        state.fieldCards.player.style.display = "none";
+        state.fieldCards.computer.style.display = "none";
+        document.querySelector('.flip-box .flip-box-inner').style.transform = '';
 
-async function updateScore() {
-    state.score.scoreBox.innerText = `Win: ${state.score.playerScore
-        } | Lose: ${state.score.computerScore
-        }`;
-}
+        document.getElementById('flip-box-front-img').src = "";
+        drawCards(5, player.player1);
+        drawCards(5, player.computer);
+    }
 
-function init() {
-    drawCards(5, player.player1);
-    drawCards(5, player.computer);
+    window.resetDuel = resetDuel;
 
-    const bgm = document.getElementById("bgm");
-    bgm.play();
-}
+    function playAudio(status) {
+        const audio = new Audio(`./src/assets/audios/${status}.wav`);
+        audio.play();
+    }
 
-init();
+    function updateScore() {
+        state.score.scoreBox.innerText = `Win: ${state.score.playerScore
+            } | Lose: ${state.score.computerScore
+            }`;
+    }
+
+    function init() {
+        drawCards(5, player.player1);
+        drawCards(5, player.computer);
+
+        const bgm = document.getElementById("bgm");
+        bgm.play();
+    }
+
+    init();
+
+});

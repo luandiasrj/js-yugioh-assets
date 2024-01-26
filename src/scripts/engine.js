@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', async (event) => {
     const state = {
         score: {
             playerScore: 0,
@@ -48,71 +48,58 @@ document.addEventListener('DOMContentLoaded', (event) => {
     ];
 
     let isCardSelected = false;
+
     function getRandomCardId() {
-        const randomIndex = Math.floor(Math.random() * cardData.length);
-        return cardData[randomIndex].id;
+        return Math.floor(Math.random() * cardData.length);
     }
+
     function setCardsField(cardId) {
+        const computerCardId = getRandomCardId();
+        const computerCardImage = document.querySelector(`#computer-cards img[data-id='${computerCardId}']`);
 
+        if (computerCardImage) {
+            const cardImageRect = computerCardImage.getBoundingClientRect();
+            const ComputerFieldCardRect = document.getElementsByClassName('card-infield')[1].getBoundingClientRect();
 
-        let computerCardId = getRandomCardId();
+            const scaleX = 140 / cardImageRect.width;
+            const scaleY = 196 / cardImageRect.height;
 
+            computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
+                }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
+                }px) scale(${scaleX}, ${scaleY})`;
+            computerCardImage.style.transition = 'transform 0.5s';
+        }
 
-        let ComputerFieldCardRect = document.getElementsByClassName('card-infield')[1].getBoundingClientRect();
-        let computerCardImage = document.querySelector(`#computer-cards img[data-id='${computerCardId}']`);
-
-        // Obtenha a posição do elemento de origem
-        let cardImageRect = computerCardImage.getBoundingClientRect();
-        let scaleX = 140 / cardImageRect.width;
-        let scaleY = 196 / cardImageRect.height;
-        computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
-            }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
-            }px) scale(${scaleX}, ${scaleY})`;
-        computerCardImage.style.transition = 'transform 0.5s';
 
         setTimeout(() => {
-
             state.fieldCards.computer.style.display = "block";
-        }, 500);
-
-        setTimeout(() => {
             document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
-        }, 500);
-        setTimeout(() => { // Aqui deve vir o código para virar a carta.
-            document.querySelector('.flip-box .flip-box-inner').style.transform = 'rotateY(180deg)';
+            document.querySelector('.flip-box .flip-box-inner').style.transform = "rotateY(180deg)";
         }, 500);
 
         setTimeout(async () => {
-            await RemoveAllCardImages();
+            await removeAllCardImages();
             state.fieldCards.player.style.display = "block";
-
             state.fieldCards.player.src = cardData[cardId].img;
             state.fieldCards.computer.src = cardData[computerCardId].img;
-
-
         }, 500);
 
         setTimeout(async () => {
-            let duelResults = await checkDuelResults(cardId, computerCardId);
-
+            const duelResults = await checkDuelResults(cardId, computerCardId);
             await updateScore();
             await drawButton(duelResults);
         }, 1000);
     }
 
     async function checkDuelResults(playerCardId, computerCardId) {
-        let playerCard = cardData[playerCardId];
+        const playerCard = cardData[playerCardId];
         let duelResults = "Empate";
 
-        // check if win
         if (playerCard.WinOf.includes(computerCardId)) {
             duelResults = "Ganhou";
             await playAudio("win");
             state.score.playerScore++;
-        }
-
-        // check if loses
-        if (playerCard.LoseOf.includes(computerCardId)) {
+        } else if (playerCard.LoseOf.includes(computerCardId)) {
             duelResults = "Perdeu";
             await playAudio("lose");
             state.score.computerScore++;
@@ -133,53 +120,38 @@ document.addEventListener('DOMContentLoaded', (event) => {
         cardDiv.appendChild(cardImage);
 
         if (fieldSide === player.player1) {
-
-            cardDiv.addEventListener("mouseover", () => {
-                drawSelectCard(randomIdCard);
-            });
-
+            cardDiv.addEventListener("mouseover", () => drawSelectCard(randomIdCard));
             cardDiv.addEventListener("click", async () => {
                 if (!isCardSelected) {
                     isCardSelected = true;
-                let playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
+                    const playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
+                    const cardImageRect = cardDiv.getBoundingClientRect();
+                    const scaleX = 140 / (cardImageRect.width / 1.2);
+                    const scaleY = 196 / (cardImageRect.height / 1.2);
 
-                // Mova o cardImage do player1 para o fieldCards.player
-                let cardImageRect = cardDiv.getBoundingClientRect();
-                let scaleX = 140 / (cardImageRect.width / 1.2);
-                let scaleY = 196 / (cardImageRect.height / 1.2);
-                cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
-                    }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
-                    }px) scale(${scaleX}, ${scaleY})`;
-                cardDiv.style.transition = 'transform 0.7s';
+                    cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
+                        }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
+                        }px) scale(${scaleX}, ${scaleY})`;
+                    cardDiv.style.transition = 'transform 0.7s';
 
-                // Aguarde 1 segundo para a animação terminar, então execute setCardsField
-                setTimeout(() => {
-                    setCardsField(cardImage.getAttribute("data-id"));
-
-                }, 700);
-            }});
-
+                    setTimeout(() => setCardsField(cardImage.getAttribute("data-id")), 700);
+                }
+            });
             cardImage.setAttribute("src", cardData[randomIdCard].img);
         }
 
         return cardDiv;
     }
 
-    function RemoveAllCardImages() {
-        let cards = document.querySelector(".card-box.framed#computer-cards");
-        let imgElements = cards.querySelectorAll("div");
-        imgElements.forEach((img) => img.remove());
-
-        cards = document.querySelector(".card-box.framed#player-cards");
-        imgElements = cards.querySelectorAll("div");
-        imgElements.forEach((img) => img.remove());
+    function removeAllCardImages() {
+        const cards = document.querySelectorAll(".card-box.framed div");
+        cards.forEach((card) => card.remove());
     }
 
     function drawCards(cardNumbers, fieldSide) {
         for (let i = 0; i < cardNumbers; i++) {
             const randomIdCard = getRandomCardId();
             const cardImage = createCardImage(randomIdCard, fieldSide);
-
             document.getElementById(fieldSide).appendChild(cardImage);
         }
     }
@@ -199,11 +171,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         isCardSelected = false;
         state.cardSprite.avatar.src = "";
         state.button.style.display = "none";
-
         state.fieldCards.player.style.display = "none";
         state.fieldCards.computer.style.display = "none";
         document.querySelector('.flip-box .flip-box-inner').style.transform = '';
-
         document.getElementById('flip-box-front-img').src = "";
         drawCards(5, player.player1);
         drawCards(5, player.computer);
@@ -225,11 +195,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function init() {
         drawCards(5, player.player1);
         drawCards(5, player.computer);
-
         const bgm = document.getElementById("bgm");
         bgm.play();
     }
 
     init();
-
 });

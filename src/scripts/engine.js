@@ -64,9 +64,11 @@ document.addEventListener('DOMContentLoaded', async (event) => {
             const scaleX = 140 / cardImageRect.width;
             const scaleY = 196 / cardImageRect.height;
 
-            computerCardImage.style.transform = `translate(${ComputerFieldCardRect.left + 36 - cardImageRect.left
-                }px, ${ComputerFieldCardRect.top + 50 - cardImageRect.top
-                }px) scale(${scaleX}, ${scaleY})`;
+            computerCardImage.style.transform = `translate(${
+                ComputerFieldCardRect.left + 36 - cardImageRect.left
+            }px, ${
+                ComputerFieldCardRect.top + 50 - cardImageRect.top
+            }px) scale(${scaleX}, ${scaleY})`;
             computerCardImage.style.transition = 'transform 0.5s';
         }
 
@@ -98,11 +100,11 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         if (playerCard.WinOf.includes(computerCardId)) {
             duelResults = "Ganhou";
             await playAudio("win");
-            state.score.playerScore++;
+            state.score.playerScore ++;
         } else if (playerCard.LoseOf.includes(computerCardId)) {
             duelResults = "Perdeu";
             await playAudio("lose");
-            state.score.computerScore++;
+            state.score.computerScore ++;
         }
 
         return duelResults;
@@ -110,8 +112,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
     function createCardImage(randomIdCard, fieldSide) {
         const cardDiv = document.createElement("div");
-        cardDiv.classList.add("card");
-
         const cardImage = document.createElement("img");
         cardImage.setAttribute("height", "100px");
         cardImage.setAttribute("src", "./src/assets/icons/card-back.png");
@@ -120,24 +120,34 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         cardDiv.appendChild(cardImage);
 
         if (fieldSide === player.player1) {
+            cardDiv.classList.add("card", "card-animationPlayer");
+            setTimeout(() => {
+                cardDiv.classList.remove("card-animationPlayer"); // Remove the animation class here
+            }, 500);
             cardDiv.addEventListener("mouseover", () => drawSelectCard(randomIdCard));
             cardDiv.addEventListener("click", async () => {
-                if (!isCardSelected) {
+                if (! isCardSelected) {
                     isCardSelected = true;
                     const playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
                     const cardImageRect = cardDiv.getBoundingClientRect();
                     const scaleX = 140 / (cardImageRect.width / 1.2);
                     const scaleY = 196 / (cardImageRect.height / 1.2);
 
-                    cardDiv.style.transform = `translate(${playerFieldCardRect.left + 29 - cardImageRect.left
-                        }px, ${playerFieldCardRect.top + 39 - cardImageRect.top
-                        }px) scale(${scaleX}, ${scaleY})`;
+                    cardDiv.style.transform = `translate(${
+                        playerFieldCardRect.left + 29 - cardImageRect.left
+                    }px, ${
+                        playerFieldCardRect.top + 39 - cardImageRect.top
+                    }px) scale(${scaleX}, ${scaleY})`;
                     cardDiv.style.transition = 'transform 0.7s';
-
                     setTimeout(() => setCardsField(cardImage.getAttribute("data-id")), 700);
                 }
             });
             cardImage.setAttribute("src", cardData[randomIdCard].img);
+        } else {
+            cardDiv.classList.add("card", "card-animationCPU");
+            setTimeout(() => {
+                cardDiv.classList.remove("card-animationCPU"); // Remove the animation class here
+            }, 500);
         }
 
         return cardDiv;
@@ -145,7 +155,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
     function removeAllCardImages() {
         const cards = document.querySelectorAll(".card-box.framed div");
-        cards.forEach((card) => card.remove());
+        cards.forEach((card) => card.classList.add("card-animationCPU"));
+        setTimeout(() => {
+            cards.forEach((card) => card.remove());
+        }, 500);
     }
 
     function drawCards(cardNumbers, fieldSide) {
@@ -187,9 +200,11 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
 
     function updateScore() {
-        state.score.scoreBox.innerText = `Win: ${state.score.playerScore
-            } | Lose: ${state.score.computerScore
-            }`;
+        state.score.scoreBox.innerText = `Win: ${
+            state.score.playerScore
+        } | Lose: ${
+            state.score.computerScore
+        }`;
     }
 
     function init() {

@@ -80,6 +80,7 @@ a:hover {
     flex-direction: column;
     justify-content: space-between;
     padding: 2rem;
+    overflow: hidden;
 }
 
 .card-versus {
@@ -174,8 +175,38 @@ a:hover {
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    border: none;
 }
 
 .flip-box-back {
     transform: rotateY(180deg);
 }
+.card-animationCPU {
+  animation: slide-in 0.5s ease-out forwards;
+}
+
+.card-animationPlayer {
+    animation: slide-out 0.5s ease-out forwards;
+  }
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+    0% {
+      transform: translateY(+100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }

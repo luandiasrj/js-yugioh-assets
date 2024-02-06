@@ -70,11 +70,12 @@ document.addEventListener('DOMContentLoaded', async (event) => {
                 ComputerFieldCardRect.top + 50 - cardImageRect.top
             }px) scale(${scaleX}, ${scaleY})`;
             computerCardImage.style.transition = 'transform 0.5s';
-        }
 
+        }
 
         setTimeout(() => {
             state.fieldCards.computer.style.display = "block";
+            computerCardImage.remove();
             document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
             document.querySelector('.flip-box .flip-box-inner').style.transform = "rotateY(180deg)";
         }, 500);
@@ -120,10 +121,12 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         cardDiv.appendChild(cardImage);
 
         if (fieldSide === player.player1) {
-            cardDiv.classList.add("card", "card-animationPlayer");
-            setTimeout(() => {
-                cardDiv.classList.remove("card-animationPlayer"); // Remove the animation class here
-            }, 500);
+            cardDiv.classList.add("card");
+
+            // Change atributes of animation to entrance 1s forwards;
+            cardDiv.style.animation = "entrance 0.7s forwards";
+            cardDiv.addEventListener('animationend', () => cardDiv.style.animation = '') // Remove the animation class here
+            cardDiv.addEventListener('animationend', () => cardDiv.style.transform = '', {once: true}) // Remove the animation class here
             cardDiv.addEventListener("mouseover", () => drawSelectCard(randomIdCard));
             cardDiv.addEventListener("click", async () => {
                 if (! isCardSelected) {
@@ -144,10 +147,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
             });
             cardImage.setAttribute("src", cardData[randomIdCard].img);
         } else {
-            cardDiv.classList.add("card", "card-animationCPU");
-            setTimeout(() => {
-                cardDiv.classList.remove("card-animationCPU"); // Remove the animation class here
-            }, 500);
+            cardDiv.style.animation = "CPU-entrance 0.7s forwards";
+            cardDiv.addEventListener('animationend', () => cardDiv.style.animation = '') // Remove the animation class here
         }
 
         return cardDiv;
@@ -155,7 +156,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
     function removeAllCardImages() {
         const cards = document.querySelectorAll(".card-box.framed div");
-        cards.forEach((card) => card.classList.add("card-animationCPU"));
+        const CPUcards = document.querySelectorAll("#computer-cards div");
+        const playerCards = document.querySelectorAll("#player-cards div");
+        CPUcards.forEach((card) => card.style.animation = "CPU-exit 0.7s forwards");
+        playerCards.forEach((card) => card.style.animation = "exit 0.7s forwards");
         setTimeout(() => {
             cards.forEach((card) => card.remove());
         }, 500);

@@ -152,12 +152,10 @@ a:hover {
     width: 90%;
 }
 
-#card-name {
-    font-size: 0.8rem;
-}
-
+#card-name,
 #card-type {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
 .flip-box-inner {
@@ -181,32 +179,62 @@ a:hover {
 .flip-box-back {
     transform: rotateY(180deg);
 }
-.card-animationCPU {
-  animation: slide-in 0.5s ease-out forwards;
-}
 
-.card-animationPlayer {
-    animation: slide-out 0.5s ease-out forwards;
-  }
-
-@keyframes slide-in {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out {
+@keyframes entrance {
     0% {
-      transform: translateY(+100%);
-      opacity: 0;
+        transform: translateY(100%);
     }
+
     100% {
-      transform: translateY(0);
-      opacity: 1;
+        transform: translateY(0);
     }
-  }
+}
+
+@keyframes CPU-entrance {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes exit {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes CPU-exit {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+#player-cards .card {
+    position: relative;
+    transition: 0.5s;
+    transform-style: preserve-3d;
+    transform: rotateY(180deg);
+}
+
+#player-cards .card:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    background: url("../assets/icons/card-back.png");
+    background-size: cover;
+}

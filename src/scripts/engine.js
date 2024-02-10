@@ -69,23 +69,25 @@ document.addEventListener('DOMContentLoaded', async (event) => {
             }px, ${
                 ComputerFieldCardRect.top + 50 - cardImageRect.top
             }px) scale(${scaleX}, ${scaleY})`;
-            computerCardImage.style.transition = 'transform 0.5s';
+            computerCardImage.style.transition = 'transform 1s';
 
         }
 
         setTimeout(() => {
             state.fieldCards.computer.style.display = "block";
-            computerCardImage.remove();
+            if (computerCardImage) 
+                computerCardImage.remove();       
+
             document.getElementById('flip-box-front-img').src = "./src/assets/icons/card-back.png";
             document.querySelector('.flip-box .flip-box-inner').style.transform = "rotateY(180deg)";
-        }, 500);
+        }, 1000);
 
         setTimeout(async () => {
             await removeAllCardImages();
             state.fieldCards.player.style.display = "block";
             state.fieldCards.player.src = cardData[cardId].img;
             state.fieldCards.computer.src = cardData[computerCardId].img;
-        }, 500);
+        }, 1000);
 
         setTimeout(async () => {
             const duelResults = await checkDuelResults(cardId, computerCardId);
@@ -113,24 +115,35 @@ document.addEventListener('DOMContentLoaded', async (event) => {
 
     function createCardImage(randomIdCard, fieldSide) {
         const cardDiv = document.createElement("div");
+        const cardFront = document.createElement("div");
         const cardImage = document.createElement("img");
+        cardFront.className = 'card-front';
         cardImage.setAttribute("height", "100px");
         cardImage.setAttribute("src", "./src/assets/icons/card-back.png");
         cardImage.setAttribute("data-id", randomIdCard);
-
-        cardDiv.appendChild(cardImage);
-
+        cardFront.appendChild(cardImage);
+        cardDiv.appendChild(cardFront);
         if (fieldSide === player.player1) {
             cardDiv.classList.add("card");
-
-            // Change atributes of animation to entrance 1s forwards;
-            cardDiv.style.animation = "entrance 0.7s forwards";
-            cardDiv.addEventListener('animationend', () => cardDiv.style.animation = '') // Remove the animation class here
-            cardDiv.addEventListener('animationend', () => cardDiv.style.transform = '', {once: true}) // Remove the animation class here
+            cardFront.classList.add("card-flip-box-front");
+            cardDiv.style.animation = "entrance 1s forwards";
+            cardDiv.addEventListener('animationend', () => {
+                cardDiv.style.animation = '';
+            });
+            setTimeout(() => {
+                cardDiv.classList.add("rotate-card");
+            }, 500);
+            setTimeout(() => {
+                cardDiv.classList.remove("rotate-card");
+            }, 500);
+            cardDiv.addEventListener('animationend', () => {
+                cardDiv.style.animation = '';
+            });
             cardDiv.addEventListener("mouseover", () => drawSelectCard(randomIdCard));
-            cardDiv.addEventListener("click", async () => {
+            cardDiv.addEventListener('click', async () => {
                 if (! isCardSelected) {
                     isCardSelected = true;
+                    setCardsField(cardImage.getAttribute("data-id"))
                     const playerFieldCardRect = document.getElementsByClassName('card-infield')[0].getBoundingClientRect();
                     const cardImageRect = cardDiv.getBoundingClientRect();
                     const scaleX = 140 / (cardImageRect.width / 1.2);
@@ -141,16 +154,18 @@ document.addEventListener('DOMContentLoaded', async (event) => {
                     }px, ${
                         playerFieldCardRect.top + 39 - cardImageRect.top
                     }px) scale(${scaleX}, ${scaleY})`;
-                    cardDiv.style.transition = 'transform 0.7s';
-                    setTimeout(() => setCardsField(cardImage.getAttribute("data-id")), 700);
+                    cardDiv.style.transition = 'transform 1s';
+
                 }
             });
             cardImage.setAttribute("src", cardData[randomIdCard].img);
+            const cardBack = document.createElement('div');
+            cardBack.className = 'card-back';
+            cardDiv.appendChild(cardBack);
         } else {
-            cardDiv.style.animation = "CPU-entrance 0.7s forwards";
+            cardDiv.style.animation = "CPU-entrance 1s forwards";
             cardDiv.addEventListener('animationend', () => cardDiv.style.animation = '') // Remove the animation class here
         }
-
         return cardDiv;
     }
 
@@ -158,19 +173,33 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         const cards = document.querySelectorAll(".card-box.framed div");
         const CPUcards = document.querySelectorAll("#computer-cards div");
         const playerCards = document.querySelectorAll("#player-cards div");
-        CPUcards.forEach((card) => card.style.animation = "CPU-exit 0.7s forwards");
-        playerCards.forEach((card) => card.style.animation = "exit 0.7s forwards");
+        CPUcards.forEach((card) => card.style.animation = "CPU-exit 1s forwards");
+        playerCards.forEach((card) => card.style.animation = "exit 1s forwards");
         setTimeout(() => {
             cards.forEach((card) => card.remove());
-        }, 500);
+        }, 1000);
     }
 
-    function drawCards(cardNumbers, fieldSide) {
-        for (let i = 0; i < cardNumbers; i++) {
-            const randomIdCard = getRandomCardId();
-            const cardImage = createCardImage(randomIdCard, fieldSide);
-            document.getElementById(fieldSide).appendChild(cardImage);
-        }
+    function drawCards(cardCount, fieldId) {
+        let cardIndex = 0;
+        const addCard = () => {
+            if (cardIndex < cardCount) {
+                const randomCardId = getRandomCardId();
+                const cardImage = createCardImage(randomCardId, fieldId);
+                cardImage.style.marginRight = '0px';
+                cardImage.style.transition = 'margin-right 0.5s ease-out';
+                document.getElementById(fieldId).appendChild(cardImage);
+                const containerWidth = document.getElementById(fieldId).clientWidth - 25;
+                const cardWidth = cardImage.offsetWidth;
+                const totalCardWidth = cardWidth * cardCount;
+                const spacing = (containerWidth - totalCardWidth) / (cardCount - 1);
+                setTimeout(() => cardImage.style.marginRight = `${spacing}px`, 10);
+                cardIndex++;
+                setTimeout(addCard, 200);
+                cardImage.style.transition = '';
+            }
+        };
+        addCard();
     }
 
     function drawSelectCard(index) {
